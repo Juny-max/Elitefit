@@ -1,0 +1,21 @@
+{
+    "name": "juniorowusu/elitefit",
+    "description": "EliteFit Gym Management System",
+    "type": "project",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Juniorowusu\\Elitefit\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "juny",
+            "email": "junyappteam@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "getbrevo/brevo-php": "^2.0"
+    }
+}
