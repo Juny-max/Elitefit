@@ -28,12 +28,34 @@ if (isset($_GET['delete_member'])) {
     header('Location: members.php'); exit();
 }
 // Fetch Members
-$result = $conn->query("SELECT * FROM users WHERE role = 'member' AND is_archived = 0 ORDER BY date_registered DESC");
+$result = $conn->query("SELECT u.*, mf.height, mf.weight, mf.body_type, mf.experience_level 
+                        FROM users u 
+                        LEFT JOIN member_fitness mf ON u.user_id = mf.member_id 
+                        WHERE u.role = 'member' AND u.is_archived = 0 
+                        ORDER BY u.date_registered DESC");
 $members = $result->fetch_all(MYSQLI_ASSOC);
-?><!DOCTYPE html>
+
+// Get member stats
+$stmt = $conn->prepare("SELECT 
+                        COUNT(*) as total_members,
+                        SUM(CASE WHEN gender = 'male' THEN 1 ELSE 0 END) as male_count,
+                        SUM(CASE WHEN gender = 'female' THEN 1 ELSE 0 END) as female_count,
+                        COUNT(DISTINCT DATE(date_registered)) as registration_days
+                        FROM users 
+                        WHERE role = 'member' AND is_archived = 0");
+$stmt->execute();
+$result = $stmt->get_result();
+$stats = $result->fetch_assoc();
+$stmt->close();
+
+// Calculate average registrations per day
+$avg_registrations = $stats['registration_days'] > 0 ? round($stats['total_members'] / $stats['registration_days'], 1) : 0;
+?>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Members - EliteFit Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -41,116 +63,437 @@ $members = $result->fetch_all(MYSQLI_ASSOC);
 <body class="bg-gray-100">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
-        <div class="bg-gray-800 text-white w-64 py-4 flex-shrink-0 h-screen fixed top-0 left-0 z-30">
-            <div class="px-4 mt-4"><h1 class="text-2xl font-bold mb-8">EliteFit Admin</h1></div>
-            <nav class="mt-8">
-                <a href="dashboard.php" class="block px-4 py-2 hover:bg-gray-700"><i class="fas fa-tachometer-alt mr-2"></i> Dashboard</a>
-                <a href="#" class="block px-4 py-2 bg-gray-900 hover:bg-gray-700"><i class="fas fa-users mr-2"></i> Members</a>
-                <a href="trainers.php" class="block px-4 py-2 hover:bg-gray-700"><i class="fas fa-dumbbell mr-2"></i> Trainers</a>
-                <a href="equipment.php" class="block px-4 py-2 hover:bg-gray-700"><i class="fas fa-cogs mr-2"></i> Equipment</a>
-                <a href="settings.php" class="block px-4 py-2 hover:bg-gray-700"><i class="fas fa-cog mr-2"></i> Settings</a>
-                <a href="archive.php" class="block px-4 py-2 hover:bg-gray-700"><i class="fas fa-archive mr-2"></i> Archive</a>
-            </nav>
-        </div>
-        <!-- Main Content -->
-        <div class="flex-1 overflow-x-hidden overflow-y-auto p-8 ml-64">
-            <h2 class="text-2xl font-semibold mb-6">Members</h2>
-            <!-- Add Member Form -->
-            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                <h3 class="text-lg font-semibold mb-4">Add Member</h3>
-                <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" name="first_name" placeholder="First Name" required class="border rounded px-3 py-2">
-                    <input type="text" name="last_name" placeholder="Last Name" required class="border rounded px-3 py-2">
-                    <input type="email" name="email" placeholder="Email" required class="border rounded px-3 py-2">
-                    <input type="text" name="contact_number" placeholder="Contact Number" required class="border rounded px-3 py-2">
-                    <select name="gender" required class="border rounded px-3 py-2">
-                        <option value="">Gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                    </select>
-                    <input type="date" name="date_of_birth" placeholder="Date of Birth" required class="border rounded px-3 py-2">
-                    <input type="password" name="password" placeholder="Password" required class="border rounded px-3 py-2">
-                    <button type="submit" name="add_member" class="bg-blue-500 text-white rounded px-4 py-2 col-span-1 md:col-span-2">Add Member</button>
-                </form>
+        <div class="bg-gray-800 text-white w-64 py-4 flex-shrink-0 h-screen fixed top-0 left-0 z-30 flex flex-col">
+            <div class="px-4 mt-4">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-md bg-blue-600 text-white">
+                        <span class="text-xl font-bold">EF</span>
+                    </div>
+                    <h1 class="text-2xl font-bold">EliteFit</h1>
+                </div>
+                <p class="text-gray-400 text-sm mt-1">Admin Dashboard</p>
             </div>
-            <!-- Members Table -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-lg font-semibold mb-4">All Members</h3>
-                <div class="overflow-x-auto">
-                <table class="min-w-full table-auto">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gender</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">DOB</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <?php foreach ($members as $member): ?>
-                        <tr>
-                            <td class="px-6 py-4"><?php echo htmlspecialchars(($member['first_name'] ?? '') . ' ' . ($member['last_name'] ?? '')); ?></td>
-                            <td class="px-6 py-4"><?php echo htmlspecialchars($member['email'] ?? ''); ?></td>
-                            <td class="px-6 py-4"><?php echo htmlspecialchars($member['contact_number'] ?? ''); ?></td>
-                            <td class="px-6 py-4"><?php echo htmlspecialchars(ucfirst($member['gender'] ?? '')); ?></td>
-                            <td class="px-6 py-4"><?php echo htmlspecialchars($member['date_of_birth'] ?? ''); ?></td>
-                            <td class="px-6 py-4">
-                                <a href="?delete_member=<?php echo $member['user_id']; ?>" data-confirm="Are you sure you want to delete this member?" class="text-red-500 hover:underline"><i class="fas fa-trash"></i> Delete</a>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+            <nav class="mt-8 flex-1">
+                <a href="dashboard.php" class="flex items-center px-4 py-3 hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-tachometer-alt mr-3 text-blue-400"></i> Dashboard
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 bg-gray-900 hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-users mr-3 text-blue-400"></i> Members
+                </a>
+                <a href="trainers.php" class="flex items-center px-4 py-3 hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-dumbbell mr-3 text-blue-400"></i> Trainers
+                </a>
+                <a href="equipment.php" class="flex items-center px-4 py-3 hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-cogs mr-3 text-blue-400"></i> Equipment
+                </a>
+                <a href="settings.php" class="flex items-center px-4 py-3 hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-cog mr-3 text-blue-400"></i> Settings
+                </a>
+                <a href="archive.php" class="flex items-center px-4 py-3 hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-archive mr-3 text-blue-400"></i> Archive
+                </a>
+            </nav>
+            <div class="mt-auto mb-4 px-4">
+                <button id="logoutBtn" class="w-full text-left px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center justify-start font-semibold shadow-lg transition-all duration-200">
+                    <i class="fas fa-sign-out-alt mr-3"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-x-hidden overflow-y-auto ml-64">
+            <!-- Top Bar -->
+            <div class="bg-white shadow-md px-6 py-4 flex justify-between items-center sticky top-0 z-20">
+                <h2 class="text-xl font-semibold">Members Management</h2>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-gray-500">
+                        <?php echo date('l, F j, Y'); ?>
+                    </span>
+                    <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                        <i class="fas fa-user-shield text-gray-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition-transform duration-300">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+                                <i class="fas fa-users text-2xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-gray-500 text-sm">Total Members</h3>
+                                <p class="text-2xl font-semibold"><?php echo $stats['total_members']; ?></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition-transform duration-300">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-green-100 text-green-500">
+                                <i class="fas fa-venus-mars text-2xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-gray-500 text-sm">Gender Distribution</h3>
+                                <p class="text-2xl font-semibold"><?php echo $stats['male_count']; ?> <span class="text-sm text-gray-500">Male</span> / <?php echo $stats['female_count']; ?> <span class="text-sm text-gray-500">Female</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition-transform duration-300">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-purple-100 text-purple-500">
+                                <i class="fas fa-chart-line text-2xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-gray-500 text-sm">Avg. Registrations</h3>
+                                <p class="text-2xl font-semibold"><?php echo $avg_registrations; ?> <span class="text-sm text-gray-500">per day</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Member Form -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold">Add New Member</h3>
+                        <button id="toggleFormBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center transition-colors">
+                            <i class="fas fa-plus mr-2"></i> Add Member
+                        </button>
+                    </div>
+                    
+                    <form method="POST" id="addMemberForm" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                            <input type="text" name="first_name" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                            <input type="text" name="last_name" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" name="email" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                            <input type="text" name="contact_number" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                            <select name="gender" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                            <input type="date" name="date_of_birth" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <input type="password" name="password" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div class="md:col-span-2 flex justify-end">
+                            <button type="button" id="cancelAddBtn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 mr-2 transition-colors">Cancel</button>
+                            <button type="submit" name="add_member" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Add Member</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Members Table -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold">All Members</h3>
+                        <div class="relative">
+                            <input type="text" id="searchMembers" placeholder="Search members..." class="border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full table-auto">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Body Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Experience</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="membersTableBody">
+                                <?php foreach ($members as $member): ?>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                                <span class="font-medium text-blue-600">
+                                                    <?php 
+                                                    $initials = strtoupper(substr($member['first_name'] ?? '', 0, 1) . substr($member['last_name'] ?? '', 0, 1));
+                                                    echo $initials;
+                                                    ?>
+                                                </span>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    <?php echo htmlspecialchars(($member['first_name'] ?? '') . ' ' . ($member['last_name'] ?? '')); ?>
+                                                </div>
+                                                <div class="text-xs text-gray-500">
+                                                    ID: <?php echo $member['user_id']; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900"><?php echo htmlspecialchars($member['email'] ?? ''); ?></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900"><?php echo htmlspecialchars($member['contact_number'] ?? ''); ?></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            <?php echo $member['gender'] === 'male' ? 'bg-blue-100 text-blue-800' : 
+                                                    ($member['gender'] === 'female' ? 'bg-pink-100 text-pink-800' : 
+                                                    'bg-gray-100 text-gray-800'); ?>">
+                                            <?php echo htmlspecialchars(ucfirst($member['gender'] ?? 'Unknown')); ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            <?php 
+                                            if (!empty($member['body_type'])) {
+                                                echo ucfirst($member['body_type']);
+                                            } else {
+                                                echo '<span class="text-gray-400">Not set</span>';
+                                            }
+                                            ?>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            <?php 
+                                            if (!empty($member['experience_level'])) {
+                                                echo ucfirst($member['experience_level']);
+                                            } else {
+                                                echo '<span class="text-gray-400">Not set</span>';
+                                            }
+                                            ?>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex space-x-2">
+                                            <button class="text-indigo-600 hover:text-indigo-900" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="text-blue-600 hover:text-blue-900" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <a href="#" data-id="<?php echo $member['user_id']; ?>" class="text-red-600 hover:text-red-900 delete-btn" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="flex items-center justify-between mt-6">
+                        <div class="text-sm text-gray-500">
+                            Showing <span class="font-medium"><?php echo count($members); ?></span> members
+                        </div>
+                        <div class="flex space-x-1">
+                            <button class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="px-3 py-1 rounded bg-blue-600 text-white">1</button>
+                            <button class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">2</button>
+                            <button class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">3</button>
+                            <button class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
     <!-- Confirmation Modal -->
-    <div id="confirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
-      <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md text-center">
+    <div id="confirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full relative animate-fadeInUp">
+            <div class="flex flex-col items-center">
+                <div class="bg-red-100 rounded-full p-4 mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-3xl"></i>
+                </div>
+                <h2 class="text-xl font-bold mb-2">Are you sure?</h2>
+                <p class="mb-6 text-center" id="confirmModalMsg">Do you want to archive this member? This action can be reversed from the Archive section.</p>
+                <div class="flex justify-center gap-4">
+                    <button id="confirmYes" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold flex items-center transition-colors">
+                        <i class="fas fa-check mr-2"></i> Yes, Archive
+                    </button>
+                    <button id="confirmNo" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg font-semibold flex items-center transition-colors">
+                        <i class="fas fa-times mr-2"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern Logout Modal -->
+    <div id="logoutModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40 hidden">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full relative animate-fadeInUp border-t-8 border-red-600">
         <div class="flex flex-col items-center">
-          <div class="bg-yellow-100 rounded-full p-4 mb-4">
-            <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl"></i>
+          <div class="mb-4">
+            <span class="bg-red-100 p-4 rounded-full"><i class="fas fa-sign-out-alt text-red-500 text-5xl animate-bounce"></i></span>
           </div>
-          <h2 class="text-xl font-bold mb-2">Are you sure?</h2>
-          <p class="mb-6" id="confirmModalMsg">Do you want to proceed?</p>
-          <div class="flex justify-center gap-4">
-            <button id="confirmYes" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded font-semibold flex items-center"><i class="fas fa-check mr-2"></i> Yes</button>
-            <button id="confirmNo" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded font-semibold flex items-center"><i class="fas fa-times mr-2"></i> No</button>
+          <h3 class="text-2xl font-extrabold mb-2 text-gray-800 tracking-tight">Logout?</h3>
+          <p class="mb-6 text-gray-600 text-center">Are you sure you want to logout from your admin session?</p>
+          <div class="flex gap-4">
+            <button id="confirmLogout" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-bold shadow transition-all duration-200 flex items-center"><i class="fas fa-sign-out-alt mr-2"></i> Yes, Logout</button>
+            <button id="cancelLogout" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-bold shadow transition-all duration-200">Cancel</button>
           </div>
         </div>
+        <button id="closeModal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl font-bold">&times;</button>
       </div>
     </div>
+    
+    <style>
+      .animate-fadeInUp { animation: fadeInUp .4s cubic-bezier(.39,.575,.565,1) both; }
+      @keyframes fadeInUp {
+        0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      #logoutBtn { transition: box-shadow .2s, background .2s; }
+      #logoutModal { transition: background .2s; }
+      #logoutModal .animate-bounce { animation: bounce 1.2s infinite alternate; }
+      @keyframes bounce {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-10px); }
+      }
+    </style>
+
     <script>
-    // Custom confirmation modal logic
-    let confirmAction = null;
-    function showConfirmModal(message, action) {
-      document.getElementById('confirmModalMsg').textContent = message;
-      document.getElementById('confirmModal').classList.remove('hidden');
-      confirmAction = action;
-    }
-    document.getElementById('confirmYes').onclick = function() {
-      document.getElementById('confirmModal').classList.add('hidden');
-      if (typeof confirmAction === 'function') confirmAction();
-    };
-    document.getElementById('confirmNo').onclick = function() {
-      document.getElementById('confirmModal').classList.add('hidden');
-      confirmAction = null;
-    };
-    // Attach modal to archive/delete buttons
-    window.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('a[data-confirm]').forEach(function(link) {
-        link.addEventListener('click', function(e) {
-          e.preventDefault();
-          const href = this.getAttribute('href');
-          const msg = this.getAttribute('data-confirm');
-          showConfirmModal(msg, function() { window.location.href = href; });
+        // Toggle Add Member Form
+        document.getElementById('toggleFormBtn').addEventListener('click', function() {
+            const form = document.getElementById('addMemberForm');
+            form.classList.toggle('hidden');
+            this.innerHTML = form.classList.contains('hidden') ? 
+                '<i class="fas fa-plus mr-2"></i> Add Member' : 
+                '<i class="fas fa-times mr-2"></i> Cancel';
         });
-      });
-    });
+
+        document.getElementById('cancelAddBtn').addEventListener('click', function() {
+            document.getElementById('addMemberForm').classList.add('hidden');
+            document.getElementById('toggleFormBtn').innerHTML = '<i class="fas fa-plus mr-2"></i> Add Member';
+        });
+
+        // Search functionality
+        document.getElementById('searchMembers').addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const rows = document.getElementById('membersTableBody').getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const name = rows[i].getElementsByTagName('td')[0].textContent.toLowerCase();
+                const email = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
+                const contact = rows[i].getElementsByTagName('td')[2].textContent.toLowerCase();
+                
+                if (name.includes(searchValue) || email.includes(searchValue) || contact.includes(searchValue)) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        });
+
+        // Confirmation Modal
+        let confirmAction = null;
+        let memberId = null;
+
+        function showConfirmModal(message, action, id) {
+            document.getElementById('confirmModalMsg').textContent = message;
+            document.getElementById('confirmModal').classList.remove('hidden');
+            confirmAction = action;
+            memberId = id;
+        }
+
+        document.getElementById('confirmYes').onclick = function() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            if (typeof confirmAction === 'function') confirmAction(memberId);
+        };
+
+        document.getElementById('confirmNo').onclick = function() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            confirmAction = null;
+            memberId = null;
+        };
+
+        // Delete button click
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.getAttribute('data-id');
+                showConfirmModal(
+                    'Do you want to archive this member? This action can be reversed from the Archive section.',
+                    function(id) { window.location.href = '?delete_member=' + id; },
+                    id
+                );
+            });
+        });
+
+        // Modern Logout Modal
+        document.addEventListener('DOMContentLoaded', function() {
+          var logoutBtn = document.getElementById('logoutBtn');
+          var modal = document.getElementById('logoutModal');
+          var confirmBtn = document.getElementById('confirmLogout');
+          var cancelBtn = document.getElementById('cancelLogout');
+          var closeModal = document.getElementById('closeModal');
+          if (logoutBtn) {
+            logoutBtn.addEventListener('click', function(e) {
+              e.preventDefault();
+              modal.classList.remove('hidden');
+            });
+          }
+          if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+              modal.classList.add('hidden');
+            });
+          }
+          if (closeModal) {
+            closeModal.addEventListener('click', function() {
+              modal.classList.add('hidden');
+            });
+          }
+          if (confirmBtn) {
+            confirmBtn.addEventListener('click', function() {
+              window.location.href = '../logout.php';
+            });
+          }
+          // Optional: Close modal on ESC
+          document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+              modal.classList.add('hidden');
+            }
+          });
+        });
     </script>
 </body>
 </html>
