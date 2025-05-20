@@ -90,7 +90,7 @@ EliteFit is a comprehensive gym and fitness management platform designed for mem
 
 ## Credits
 
-Developed by the EliteFit Team.
+Developed by the Juny.
 
 ---
 
