@@ -581,7 +581,7 @@ $equipment = $equipment_result->fetch_all(MYSQLI_ASSOC);
                                     <small><?= date('M d, Y', strtotime($workout['start_date'])) ?> - <?= date('M d, Y', strtotime($workout['end_date'])) ?></small>
                                 </li>
                             <?php endforeach; ?>
-                            <a href="workout_plans.php" class="view-all">View All Workouts</a>
+                            <a href="all_workouts.php" class="view-all">View All Workouts</a>
                         <?php else: ?>
                             <li class="list-item">No recent workout assignments</li>
                         <?php endif; ?>

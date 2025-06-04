@@ -2,7 +2,6 @@
 include_once "config.php";
 require_once 'vendor/autoload.php'; // Add this to load Brevo SDK
 
-
 // Fetch workout plans for the form
 $workout_plans = [];
 if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
@@ -19,48 +18,209 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EliteFit Gym - Registration</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4361ee;
-            --primary-dark: #3a0ca3;
-            --primary-light: #4cc9f0;
-            --secondary: #f72585;
-            --dark: #212529;
-            --light: #f8f9fa;
-            --gray: #6c757d;
-            --success: #4cc9f0;
-            --danger: #ef233c;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --secondary: #1e40af;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --gray-light: #e2e8f0;
+            --gray-lighter: #f1f5f9;
+            --success: #10b981;
+            --danger: #ef4444;
+            --white: #ffffff;
             --border-radius: 16px;
-            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            --transition: all 0.3s ease;
+            --border-radius-sm: 8px;
+            --border-radius-lg: 20px;
+            --box-shadow: 0 10px 25px rgba(37, 99, 235, 0.1);
+            --box-shadow-lg: 0 20px 40px rgba(37, 99, 235, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #1e40af;
             margin: 0;
             padding: 0;
             min-height: 100vh;
             overflow-x: hidden;
-            /* Remove flex centering to allow scrolling */
+            position: relative;
         }
-        #vanta-bg {
+
+        /* Animated Background Elements */
+        .bg-animation {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -2;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+            pointer-events: none;
         }
 
-        .form-container {
-            background: white;
-            padding: 2.5rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
+        /* Floating Circles */
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .floating-circle:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            animation-duration: 20s;
+        }
+
+        .floating-circle:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 70%;
+            left: 80%;
+            animation-delay: 5s;
+            animation-duration: 25s;
+        }
+
+        .floating-circle:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            top: 50%;
+            left: 5%;
+            animation-delay: 10s;
+            animation-duration: 18s;
+        }
+
+        .floating-circle:nth-child(4) {
+            width: 120px;
+            height: 120px;
+            top: 20%;
+            left: 70%;
+            animation-delay: 15s;
+            animation-duration: 22s;
+        }
+
+        .floating-circle:nth-child(5) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 8s;
+            animation-duration: 16s;
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0px) translateX(0px) rotate(0deg);
+                opacity: 0.3;
+            }
+            25% { 
+                transform: translateY(-30px) translateX(20px) rotate(90deg);
+                opacity: 0.6;
+            }
+            50% { 
+                transform: translateY(-60px) translateX(-10px) rotate(180deg);
+                opacity: 0.4;
+            }
+            75% { 
+                transform: translateY(-20px) translateX(-30px) rotate(270deg);
+                opacity: 0.7;
+            }
+        }
+
+        /* Subtle Grid Pattern */
+        .grid-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 800px;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 30s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Pulsing Dots */
+        .pulse-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        .pulse-dot:nth-child(1) {
+            top: 15%;
+            left: 25%;
+            animation-delay: 0s;
+        }
+
+        .pulse-dot:nth-child(2) {
+            top: 60%;
+            left: 75%;
+            animation-delay: 1s;
+        }
+
+        .pulse-dot:nth-child(3) {
+            top: 85%;
+            left: 45%;
+            animation-delay: 2s;
+        }
+
+        .pulse-dot:nth-child(4) {
+            top: 30%;
+            left: 85%;
+            animation-delay: 1.5s;
+        }
+
+        .pulse-dot:nth-child(5) {
+            top: 75%;
+            left: 15%;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 0.2;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(3);
+            }
+        }
+
+        /* Glass morphism container */
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 3rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--box-shadow-lg);
+            width: 100%;
+            max-width: 900px;
             margin: 2rem auto;
             position: relative;
             overflow: hidden;
@@ -73,108 +233,154 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
             top: 0;
             left: 0;
             width: 100%;
-            height: 8px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            height: 4px;
+            background: var(--primary);
         }
 
+        /* Header Styles */
         h1 {
-            color: var(--primary-dark);
-            margin-bottom: 1.5rem;
-            font-size: 2rem;
-            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            font-weight: 800;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 1rem;
+            text-align: center;
+            justify-content: center;
         }
 
         h1 i {
-            font-size: 1.8rem;
-            color: var(--primary);
+            font-size: 2.2rem;
+            color: var(--primary-light);
         }
 
         h2 {
             color: var(--primary);
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
+            font-size: 1.75rem;
+            margin-bottom: 2rem;
+            font-weight: 700;
             position: relative;
-            padding-bottom: 0.5rem;
+            padding-bottom: 1rem;
+            text-align: center;
         }
 
         h2::after {
             content: '';
             position: absolute;
             bottom: 0;
-            left: 0;
-            width: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
             height: 3px;
             background: var(--primary);
             border-radius: 3px;
         }
 
+        /* Form Section Animations */
         .form-section {
             display: none;
-            animation: fadeIn 0.5s ease;
+            animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes slideInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
         }
 
         .form-section.active {
             display: block;
         }
 
+        /* Form Groups */
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             position: relative;
         }
 
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
             color: var(--dark);
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
         }
 
+        /* Modern Input Styles */
         input, select, textarea {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e9ecef;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--gray-light);
             border-radius: var(--border-radius);
             font-size: 1rem;
             box-sizing: border-box;
             transition: var(--transition);
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
+            background: var(--white);
         }
 
         input:focus, select:focus, textarea:focus {
             border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            transform: translateY(-2px);
         }
 
+        input:hover, select:hover, textarea:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* Modern Button Styles */
         .btn {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
+            padding: 1rem 2rem;
             border-radius: var(--border-radius);
             cursor: pointer;
             font-size: 1rem;
-            font-weight: 500;
+            font-weight: 600;
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
         }
 
         .btn:hover {
             background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
         }
 
         .btn-secondary {
@@ -182,24 +388,34 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
         }
 
         .btn-secondary:hover {
-            background: #5a6268;
+            background: var(--dark);
+            box-shadow: 0 15px 30px rgba(100, 116, 139, 0.3);
         }
 
+        /* Navigation Buttons */
         .nav-buttons {
-            margin-top: 2rem;
+            margin-top: 3rem;
             display: flex;
             justify-content: space-between;
+            gap: 1rem;
         }
 
+        /* Profile Picture Styles */
         .profile-picture-preview {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             object-fit: cover;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             display: none;
-            border: 3px solid #e9ecef;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 4px solid var(--primary-light);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+            transition: var(--transition);
+        }
+
+        .profile-picture-preview:hover {
+            transform: scale(1.05);
+            border-color: var(--primary);
         }
 
         .file-upload {
@@ -218,72 +434,28 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
             cursor: pointer;
         }
 
+        /* Alert Styles */
         .alert {
-            padding: 0.75rem 1rem;
-            margin-bottom: 1.5rem;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
         }
 
         .alert-success {
-            background: #009688;
-            color: #fff;
-            border-radius: 16px;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.18);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 1.15rem;
-            font-weight: 500;
-            padding: 1.25rem 2rem;
-            margin-bottom: 1.5rem;
-            border-left: 7px solid #00796b;
-            animation: fadeInUp 0.5s;
-            position: relative;
+            background: rgba(16, 185, 129, 0.1);
+            color: #065f46;
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
         .alert-error {
-            background: #f44336;
-            color: #fff;
-            border-radius: 16px;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.18);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 1.15rem;
-            font-weight: 500;
-            padding: 1.25rem 2rem;
-            margin-bottom: 1.5rem;
-            border-left: 7px solid #d32f2f;
-            animation: fadeInUp 0.5s;
-            position: relative;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    border: none;
-    opacity: 1 !important;
-    z-index: 9999;
-    padding: 2rem 2.5rem;
-    text-align: center;
-    font-size: 1.1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.2rem;
-}
-.registration-popup-alert.alert-success {
-    background: #e6faff;
-    color: #157e90;
-    border-left: 6px solid #4cc9f0;
-}
-.registration-popup-alert.alert-error {
-    background: #fff0f1;
-    color: #d90429;
-    border-left: 6px solid #ef233c;
-}
-
-            flex-shrink: 0;
+            background: rgba(239, 68, 68, 0.1);
+            color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
         .alert-close {
@@ -295,18 +467,16 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
             cursor: pointer;
             opacity: 0.7;
             transition: opacity 0.2s;
+            padding: 0.25rem;
+            border-radius: 50%;
         }
 
-        .alert-close:hover { opacity: 1; }
-
-        small {
-            display: block;
-            margin-top: 0.5rem;
-            color: var(--gray);
-            font-size: 0.875rem;
+        .alert-close:hover { 
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.1);
         }
 
-        /* Multi-select dropdown styling */
+        /* Multi-select Dropdown */
         .multiselect {
             position: relative;
             width: 100%;
@@ -319,18 +489,18 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
 
         .select-box select {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e9ecef;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--gray-light);
             border-radius: var(--border-radius);
-            background-color: white;
+            background: var(--white);
             cursor: pointer;
             appearance: none;
-            padding-right: 2.5rem;
+            padding-right: 3rem;
         }
 
         .dropdown-icon {
             position: absolute;
-            right: 1rem;
+            right: 1.25rem;
             top: 50%;
             transform: translateY(-50%);
             pointer-events: none;
@@ -340,17 +510,18 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
 
         .select-box.active .dropdown-icon {
             transform: translateY(-50%) rotate(180deg);
+            color: var(--primary);
         }
 
         #checkboxes {
             display: none;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--gray-light);
             border-radius: var(--border-radius);
-            margin-top: 0.5rem;
-            padding: 0.75rem;
-            max-height: 200px;
+            margin-top: 0.75rem;
+            padding: 1rem;
+            max-height: 250px;
             overflow-y: auto;
-            background: white;
+            background: var(--white);
             position: absolute;
             width: 100%;
             z-index: 100;
@@ -360,36 +531,92 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
         #checkboxes label {
             display: flex;
             align-items: center;
-            padding: 0.5rem;
-            border-radius: 4px;
+            padding: 0.75rem;
+            border-radius: var(--border-radius-sm);
             cursor: pointer;
             transition: var(--transition);
+            margin-bottom: 0.5rem;
         }
 
         #checkboxes label:hover {
-            background-color: rgba(67, 97, 238, 0.1);
+            background: rgba(37, 99, 235, 0.1);
+            transform: translateX(5px);
         }
 
         #checkboxes input[type="checkbox"] {
             width: auto;
-            margin-right: 0.75rem;
+            margin-right: 1rem;
+            transform: scale(1.2);
         }
 
-        /* Password Notification Styles */
+        /* Date Select Container */
+        .date-select-container {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .date-select-container select {
+            flex: 1;
+        }
+
+        /* Age Error Styles */
+        .age-error-container {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--danger);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transform: translateY(-10px);
+            opacity: 0;
+            transition: var(--transition);
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        .age-error-container.show {
+            transform: translateY(0);
+            opacity: 1;
+            max-height: 120px;
+            margin-bottom: 1rem;
+        }
+
+        .age-error-icon {
+            color: var(--danger);
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .age-error-content h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .age-error-content p {
+            margin: 0;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        /* Password Notification */
         .password-notification {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 1.5rem;
-            max-width: 350px;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--box-shadow-lg);
+            padding: 2rem;
+            max-width: 400px;
             transform: translateY(100px);
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             z-index: 1000;
-            border-left: 4px solid var(--primary);
+            border: 1px solid var(--primary-light);
         }
 
         .password-notification.show {
@@ -408,50 +635,48 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
             color: var(--primary);
         }
 
-        .notification-text {
-            flex: 1;
-        }
-
         .notification-text h3 {
-            margin: 0 0 0.5rem 0;
-            color: var(--primary-dark);
-            font-weight: 600;
+            margin: 0 0 1rem 0;
+            color: var(--primary);
+            font-weight: 700;
         }
 
         .password-display {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            margin: 0.5rem 0;
+            gap: 0.75rem;
+            margin: 1rem 0;
         }
 
         .password-value {
             font-family: 'Courier New', monospace;
             font-size: 1.1rem;
-            background: #f8f9fa;
-            padding: 0.5rem;
-            border-radius: 4px;
+            background: var(--gray-lighter);
+            padding: 0.75rem;
+            border-radius: var(--border-radius-sm);
             flex: 1;
             letter-spacing: 1px;
+            border: 1px solid var(--gray-light);
         }
 
         .copy-btn {
-            background: var(--primary-light);
-            color: var(--primary-dark);
+            background: var(--success);
+            color: white;
             border: none;
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius-sm);
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             transition: var(--transition);
             font-size: 0.9rem;
+            font-weight: 600;
         }
 
         .copy-btn:hover {
-            background: var(--primary);
-            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
         }
 
         .close-btn {
@@ -461,21 +686,23 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
             background: var(--danger);
             color: white;
             border: none;
-            width: 25px;
-            height: 25px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: var(--transition);
+            font-size: 0.9rem;
         }
 
         .close-btn:hover {
             transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
         }
 
-        /* Loading spinner */
+        /* Loading Spinner */
         .spinner {
             animation: spin 1s linear infinite;
         }
@@ -485,91 +712,112 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
             100% { transform: rotate(360deg); }
         }
 
-        /* Responsive adjustments */
+        /* Responsive Design */
         @media (max-width: 768px) {
             .form-container {
-                padding: 1.5rem;
+                padding: 2rem;
                 margin: 1rem;
+                border-radius: var(--border-radius);
+            }
+            
+            h1 {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .date-select-container {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                gap: 1rem;
             }
             
             .password-notification {
-                max-width: calc(100% - 40px);
-                right: 20px;
-                left: 20px;
+                max-width: calc(100% - 2rem);
+                right: 1rem;
+                left: 1rem;
+                bottom: 1rem;
+            }
+
+            .floating-circle {
+                display: none;
             }
         }
 
-        /* New Age Validation Styles */
-        .age-error-container {
-            background-color: rgba(239, 35, 60, 0.1);
-            border-left: 4px solid var(--danger);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            margin-top: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transform: translateY(-10px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            max-height: 0;
-            overflow: hidden;
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
         }
 
-        .age-error-container.show {
-            transform: translateY(0);
-            opacity: 1;
-            max-height: 100px;
-            margin-bottom: 1rem;
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .age-error-icon {
-            color: var(--danger);
-            font-size: 1.5rem;
-            flex-shrink: 0;
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
         }
 
-        .age-error-content h4 {
-            margin: 0 0 0.25rem 0;
-            color: var(--danger);
-            font-weight: 600;
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
         }
 
-        .age-error-content p {
-            margin: 0;
-            color: var(--dark);
-            font-size: 0.9rem;
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
+        /* Form validation styles */
+        input:invalid:not(:focus):not(:placeholder-shown) {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
         }
 
-        .date-select-container {
-            display: flex;
-            gap: 10px;
+        input:valid:not(:focus):not(:placeholder-shown) {
+            border-color: var(--success);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
         }
 
-        .date-select-container select {
-            flex: 1;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .date-select-container {
-                flex-direction: column;
-                gap: 8px;
-            }
+        /* Small text styling */
+        small {
+            display: block;
+            margin-top: 0.75rem;
+            color: var(--gray);
+            font-size: 0.875rem;
+            font-weight: 500;
         }
     </style>
-    <!-- Vanta.js & Three.js for animated background -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
 </head>
 <body>
-    <div id="vanta-bg" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:-2;"></div>
+    <!-- Animated background elements -->
+    <div class="bg-animation">
+        <!-- Grid Pattern -->
+        <div class="grid-pattern"></div>
+        
+        <!-- Floating Circles -->
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        
+        <!-- Pulsing Dots -->
+        <div class="pulse-dot"></div>
+        <div class="pulse-dot"></div>
+        <div class="pulse-dot"></div>
+        <div class="pulse-dot"></div>
+        <div class="pulse-dot"></div>
+    </div>
+
     <div class="form-container">
         <h1><i class="fas fa-dumbbell"></i> EliteFit Gym Registration</h1>
         
@@ -578,16 +826,18 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
         
         <?php if (isset($_GET['error'])): ?>
             <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
                 <?= htmlspecialchars($_GET['error']) ?>
+                <button class="alert-close" onclick="this.parentNode.remove()">&times;</button>
             </div>
         <?php endif; ?>
         
         <form id="registrationForm" method="POST" enctype="multipart/form-data">
             <!-- Section 1: Personal Info -->
             <div id="section1" class="form-section active">
-                <h2>Personal Information</h2>
+                <h2><i class="fas fa-user"></i> Personal Information</h2>
                 <div class="form-group">
-                    <label>Profile Picture</label>
+                    <label><i class="fas fa-camera"></i> Profile Picture</label>
                     <img id="profilePreview" class="profile-picture-preview" src="#" alt="Profile Preview">
                     <div class="file-upload">
                         <button type="button" class="btn btn-secondary">
@@ -597,35 +847,35 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>First Name*</label>
-                    <input type="text" name="first_name" required>
+                    <label><i class="fas fa-user"></i> First Name*</label>
+                    <input type="text" name="first_name" required placeholder="Enter your first name">
                 </div>
                 <div class="form-group">
-                    <label>Last Name*</label>
-                    <input type="text" name="last_name" required>
+                    <label><i class="fas fa-user"></i> Last Name*</label>
+                    <input type="text" name="last_name" required placeholder="Enter your last name">
                 </div>
                 <div class="form-group">
-                    <label>Email*</label>
-                    <input type="email" name="email" required>
+                    <label><i class="fas fa-envelope"></i> Email*</label>
+                    <input type="email" name="email" required placeholder="Enter your email address">
                 </div>
                 <div class="form-group">
-                    <label>Contact Number*</label>
-                    <input type="tel" name="contact_number" required>
+                    <label><i class="fas fa-phone"></i> Contact Number*</label>
+                    <input type="tel" name="contact_number" required placeholder="Enter your phone number">
                 </div>
                 <div class="form-group">
-                    <label>Gender*</label>
+                    <label><i class="fas fa-venus-mars"></i> Gender*</label>
                     <select name="gender" required>
-                        <option value="">Select...</option>
+                        <option value="">Select your gender...</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Location*</label>
-                    <input type="text" name="location" required>
+                    <label><i class="fas fa-map-marker-alt"></i> Location*</label>
+                    <input type="text" name="location" required placeholder="Enter your location">
                 </div>
                 <div class="form-group">
-                    <label>Date of Birth*</label>
+                    <label><i class="fas fa-calendar-alt"></i> Date of Birth*</label>
                     <div class="date-select-container">
                         <select name="dob_day" id="dob_day" required>
                             <option value="">Day</option>
@@ -668,35 +918,35 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
             
             <!-- Section 2: Fitness Details -->
             <div id="section2" class="form-section">
-                <h2>Fitness Information</h2>
+                <h2><i class="fas fa-heartbeat"></i> Fitness Information</h2>
                 <div class="form-group">
-                    <label>Height (cm)</label>
-                    <input type="number" name="height" step="0.1">
+                    <label><i class="fas fa-ruler-vertical"></i> Height (cm)</label>
+                    <input type="number" name="height" step="0.1" placeholder="Enter your height in cm">
                 </div>
                 <div class="form-group">
-                    <label>Weight (kg)</label>
-                    <input type="number" name="weight" step="0.1">
+                    <label><i class="fas fa-weight"></i> Weight (kg)</label>
+                    <input type="number" name="weight" step="0.1" placeholder="Enter your weight in kg">
                 </div>
                 <div class="form-group">
-                    <label>Body Type</label>
+                    <label><i class="fas fa-user-circle"></i> Body Type</label>
                     <select name="body_type">
-                        <option value="">Select...</option>
-                        <option value="ectomorph">Ectomorph</option>
-                        <option value="mesomorph">Mesomorph</option>
-                        <option value="endomorph">Endomorph</option>
+                        <option value="">Select your body type...</option>
+                        <option value="ectomorph">Ectomorph (Lean & Long)</option>
+                        <option value="mesomorph">Mesomorph (Muscular & Well-built)</option>
+                        <option value="endomorph">Endomorph (Big & High Body Fat)</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Experience Level</label>
+                    <label><i class="fas fa-chart-line"></i> Experience Level</label>
                     <select name="experience_level">
-                        <option value="">Select...</option>
-                        <option value="beginner">Beginner</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="advanced">Advanced</option>
+                        <option value="">Select your experience level...</option>
+                        <option value="beginner">Beginner (0-6 months)</option>
+                        <option value="intermediate">Intermediate (6 months - 2 years)</option>
+                        <option value="advanced">Advanced (2+ years)</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Preferred Workout Plans (Select up to 3)</label>
+                    <label><i class="fas fa-list-check"></i> Preferred Workout Plans (Select up to 3)</label>
                     <div class="multiselect">
                         <div class="select-box" id="selectBox">
                             <select id="workout_plan_dropdown" onclick="showCheckboxes(event)" readonly>
@@ -716,12 +966,12 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Fitness Goals</label>
-                    <textarea name="fitness_goals" rows="3" placeholder="Enter your fitness goals, one per line"></textarea>
+                    <label><i class="fas fa-bullseye"></i> Fitness Goals</label>
+                    <textarea name="fitness_goals" rows="4" placeholder="Describe your fitness goals (e.g., lose weight, build muscle, improve endurance)"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Health Conditions (if any)</label>
-                    <textarea name="health_conditions" rows="2" placeholder="List any health conditions we should know about"></textarea>
+                    <label><i class="fas fa-notes-medical"></i> Health Conditions (if any)</label>
+                    <textarea name="health_conditions" rows="3" placeholder="List any health conditions, injuries, or medical concerns we should know about"></textarea>
                 </div>
             </div>
             
@@ -791,12 +1041,6 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
             // Show error with animation
             ageError.style.display = 'flex';
             ageError.classList.add('show');
-            ageError.classList.add('shake');
-            
-            // Remove shake animation after it completes
-            setTimeout(() => {
-                ageError.classList.remove('shake');
-            }, 500);
             
             disableForm(true);
             return false;
@@ -811,50 +1055,49 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
     }
 
     function disableForm(disabled) {
-    const form = document.getElementById('registrationForm');
-    const inputs = form.querySelectorAll('input, select, textarea, button');
-    
-    inputs.forEach(input => {
-        // Only disable if it's not a date input and not the navigation buttons
-        if (input.name !== 'dob_day' && 
-            input.name !== 'dob_month' && 
-            input.name !== 'dob_year' && 
-            input.id !== 'nextBtn' && 
-            input.id !== 'prevBtn' && 
-            input.id !== 'submitBtn') {
-            input.disabled = disabled;
+        const form = document.getElementById('registrationForm');
+        const inputs = form.querySelectorAll('input, select, textarea, button');
+        
+        inputs.forEach(input => {
+            // Only disable if it's not a date input and not the navigation buttons
+            if (input.name !== 'dob_day' && 
+                input.name !== 'dob_month' && 
+                input.name !== 'dob_year' && 
+                input.id !== 'nextBtn' && 
+                input.id !== 'prevBtn' && 
+                input.id !== 'submitBtn') {
+                input.disabled = disabled;
+            }
+        });
+        
+        // Visual indication for disabled state
+        if (disabled) {
+            form.style.opacity = '0.7';
+            form.style.pointerEvents = 'none';
+
+            // Keep date inputs and navigation buttons enabled
+            ['dob_day', 'dob_month', 'dob_year'].forEach(name => {
+                const input = document.querySelector(`[name="${name}"]`);
+                input.disabled = false;
+                input.style.opacity = '1';
+                input.style.pointerEvents = 'auto';
+            });
+
+            ['nextBtn', 'prevBtn'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.disabled = false;
+                btn.style.pointerEvents = 'auto';
+            });
+
+        } else {
+            form.style.opacity = '1';
+            form.style.pointerEvents = 'auto';
+
+            document.getElementById('prevBtn').style.display = currentSection === 1 ? 'none' : 'block';
+            document.getElementById('nextBtn').style.display = currentSection === totalSections ? 'none' : 'block';
+            document.getElementById('submitBtn').style.display = currentSection === totalSections ? 'block' : 'none';
         }
-    });
-    
-    // Visual indication for disabled state
-    if (disabled) {
-    form.style.opacity = '0.7';
-    form.style.pointerEvents = 'none';
-
-    // Keep date inputs and navigation buttons enabled
-    ['dob_day', 'dob_month', 'dob_year'].forEach(name => {
-        const input = document.querySelector(`[name="${name}"]`);
-        input.disabled = false;
-        input.style.opacity = '1';
-        input.style.pointerEvents = 'auto';
-    });
-
-    ['nextBtn', 'prevBtn'].forEach(id => {
-        const btn = document.getElementById(id);
-        btn.disabled = false;
-        btn.style.pointerEvents = 'auto'; // 
-    });
-
-} else {
-    form.style.opacity = '1';
-    form.style.pointerEvents = 'auto';
-
-    document.getElementById('prevBtn').style.display = currentSection === 1 ? 'none' : 'block';
-    document.getElementById('nextBtn').style.display = currentSection === totalSections ? 'none' : 'block';
-    document.getElementById('submitBtn').style.display = currentSection === totalSections ? 'block' : 'none';
-}
-
-}
+    }
 
     // Show password notification
     function showPasswordNotification(password, otpRedirect = false) {
@@ -867,27 +1110,27 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
         notification.className = 'password-notification show';
         
         notification.innerHTML = [
-        '<div class="notification-content">',
-        '    <i class="fas fa-key"></i>',
-        '    <div class="notification-text">',
-        '        <h3>Your Generated Password</h3>',
-        '        <div class="password-display">',
-        '            <span class="password-value">' + password + '</span>',
-        '            <button class="copy-btn" onclick="copyToClipboard(\'' + password + '\')">',
-        '                <i class="fas fa-copy"></i> Copy',
-        '            </button>',
-        '        </div>',
-        '        <small>Please save this password as it won\'t be shown again</small>',
-        '        <div id="countdown-timer">' + (otpRedirect ? 'Redirecting to OTP verification in 5 seconds...' : 'Redirecting in 5 seconds...') + '</div>',
-        '        <button class="btn" style="width:100%;margin-top:10px;" onclick="' + (otpRedirect ? 'redirectToOtp()' : 'redirectNow()') + '">',
-        '            <i class="fas ' + (otpRedirect ? 'fa-shield-alt' : 'fa-sign-in-alt') + '"></i> ' + (otpRedirect ? 'Go to OTP Verification Now' : 'Go to Login Now'),
-        '        </button>',
-        '    </div>',
-        '    <button class="close-btn" onclick="closeNotification()">',
-        '        <i class="fas fa-times"></i>',
-        '    </button>',
-        '</div>'
-    ].join('');
+            '<div class="notification-content">',
+            '    <i class="fas fa-key"></i>',
+            '    <div class="notification-text">',
+            '        <h3>Your Generated Password</h3>',
+            '        <div class="password-display">',
+            '            <span class="password-value">' + password + '</span>',
+            '            <button class="copy-btn" onclick="copyToClipboard(\'' + password + '\')">',
+            '                <i class="fas fa-copy"></i> Copy',
+            '            </button>',
+            '        </div>',
+            '        <small>Please save this password as it won\'t be shown again</small>',
+            '        <div id="countdown-timer">' + (otpRedirect ? 'Redirecting to OTP verification in 5 seconds...' : 'Redirecting in 5 seconds...') + '</div>',
+            '        <button class="btn" style="width:100%;margin-top:15px;" onclick="' + (otpRedirect ? 'redirectToOtp()' : 'redirectNow()') + '">',
+            '            <i class="fas ' + (otpRedirect ? 'fa-shield-alt' : 'fa-sign-in-alt') + '"></i> ' + (otpRedirect ? 'Go to OTP Verification Now' : 'Go to Login Now'),
+            '        </button>',
+            '    </div>',
+            '    <button class="close-btn" onclick="closeNotification()">',
+            '        <i class="fas fa-times"></i>',
+            '    </button>',
+            '</div>'
+        ].join('');
         
         document.body.appendChild(notification);
         
@@ -911,13 +1154,11 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
                 };
             }
         }
-
-        
     }
 
     function redirectToOtp() {
-    closeNotification();
-    window.location.href = 'otp_verification.php';
+        closeNotification();
+        window.location.href = 'otp_verification.php';
     }
 
     function updateCountdown() {
@@ -934,20 +1175,20 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
     }
 
     function redirectNow() {
-    clearInterval(redirectTimer);
-    const notification = document.querySelector('.password-notification');
-    if (notification) {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 500);
+        clearInterval(redirectTimer);
+        const notification = document.querySelector('.password-notification');
+        if (notification) {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 500);
+        }
+        
+        // Check if we should go to OTP or login
+        if (window.otpRequired) {
+            window.location.href = 'otp_verification.php';
+        } else {
+            window.location.href = 'index.php';
+        }
     }
-    
-    // Check if we should go to OTP or login
-    if (window.otpRequired) {
-        window.location.href = 'otp_verification.php';
-    } else {
-        window.location.href = 'index.php';
-    }
-}
 
     function closeNotification() {
         clearInterval(redirectTimer);
@@ -1040,7 +1281,6 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
     
     // Utility to show styled notification
     function showRegistrationNotification(type, message) {
-
         console.log('showRegistrationNotification called', type, message); // DEBUG
         // Remove any existing notification
         const old = document.getElementById('registration-alert');
@@ -1065,55 +1305,54 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
             // Scroll to notification smoothly
             div.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-
     }
     // Make notification function globally accessible for test button
     window.showRegistrationNotification = showRegistrationNotification;
 
     // AJAX form submission
     function submitForm(password) {
-    const form = document.getElementById('registrationForm');
-    const formData = new FormData(form);
-    
-    // Show loading state
-    const submitBtn = document.getElementById('submitBtn');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner spinner"></i> Processing...';
-    
-    fetch('register_process.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Registration fetch response:', data); // DEBUG
-        if (data.status === 'success') {
-            if (data.otp_required) {
-                // Set flag for OTP requirement
-                window.otpRequired = true;
-                // Show password and redirect to OTP page
-                showPasswordNotification(password, true);
+        const form = document.getElementById('registrationForm');
+        const formData = new FormData(form);
+        
+        // Show loading state
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner spinner"></i> Processing...';
+        
+        fetch('register_process.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Registration fetch response:', data); // DEBUG
+            if (data.status === 'success') {
+                if (data.otp_required) {
+                    // Set flag for OTP requirement
+                    window.otpRequired = true;
+                    // Show password and redirect to OTP page
+                    showPasswordNotification(password, true);
+                } else {
+                    window.otpRequired = false;
+                    // Old behavior (shouldn't happen with our changes)
+                    showPasswordNotification(password);
+                }
             } else {
-                window.otpRequired = false;
-                // Old behavior (shouldn't happen with our changes)
-                showPasswordNotification(password);
+                // Show styled error notification based on error_type
+                showRegistrationNotification(data.error_type || 'error', data.message || 'Registration failed.');
             }
-        } else {
-            // Show styled error notification based on error_type
-            showRegistrationNotification(data.error_type || 'error', data.message || 'Registration failed.');
-        }
-        // Reset submit button
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Registration';
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showRegistrationNotification('error', error.message || 'Registration failed. Please try again.');
-        // Reset submit button
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Registration';
-    });
-}
+            // Reset submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Registration';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showRegistrationNotification('error', error.message || 'Registration failed. Please try again.');
+            // Reset submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Registration';
+        });
+    }
     
     // Validate entire form before submission
     function validateForm() {
@@ -1307,16 +1546,6 @@ if ($result = mysqli_query($conn, "SELECT * FROM workout_plans")) {
             validateForm();
         });
     };
-</script>
-<script>
-    VANTA.WAVES({
-      el: "#vanta-bg",
-      color: 0x1e3c72,
-      shininess: 50,
-      waveHeight: 20,
-      waveSpeed: 1.2,
-      zoom: 0.85
-    });
-</script>
+    </script>
 </body>
 </html>

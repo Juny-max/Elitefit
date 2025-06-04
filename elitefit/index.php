@@ -10,23 +10,198 @@ session_start();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EliteFit Gym - Login</title>
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --secondary: #1e40af;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --gray-light: #e2e8f0;
+            --gray-lighter: #f1f5f9;
+            --success: #10b981;
+            --danger: #ef4444;
+            --white: #ffffff;
+            --border-radius: 16px;
+            --border-radius-sm: 8px;
+            --border-radius-lg: 20px;
+            --box-shadow: 0 10px 25px rgba(37, 99, 235, 0.1);
+            --box-shadow-lg: 0 20px 40px rgba(37, 99, 235, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #1e40af;
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
+            overflow-x: hidden;
         }
-        #vanta-bg {
+
+        /* Animated Background Elements */
+        .bg-animation {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -2;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Floating Circles */
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .floating-circle:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            animation-duration: 20s;
+        }
+
+        .floating-circle:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 70%;
+            left: 80%;
+            animation-delay: 5s;
+            animation-duration: 25s;
+        }
+
+        .floating-circle:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            top: 50%;
+            left: 5%;
+            animation-delay: 10s;
+            animation-duration: 18s;
+        }
+
+        .floating-circle:nth-child(4) {
+            width: 120px;
+            height: 120px;
+            top: 20%;
+            left: 70%;
+            animation-delay: 15s;
+            animation-duration: 22s;
+        }
+
+        .floating-circle:nth-child(5) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 8s;
+            animation-duration: 16s;
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0px) translateX(0px) rotate(0deg);
+                opacity: 0.3;
+            }
+            25% { 
+                transform: translateY(-30px) translateX(20px) rotate(90deg);
+                opacity: 0.6;
+            }
+            50% { 
+                transform: translateY(-60px) translateX(-10px) rotate(180deg);
+                opacity: 0.4;
+            }
+            75% { 
+                transform: translateY(-20px) translateX(-30px) rotate(270deg);
+                opacity: 0.7;
+            }
+        }
+
+        /* Subtle Grid Pattern */
+        .grid-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 30s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Pulsing Dots */
+        .pulse-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        .pulse-dot:nth-child(1) {
+            top: 15%;
+            left: 25%;
+            animation-delay: 0s;
+        }
+
+        .pulse-dot:nth-child(2) {
+            top: 60%;
+            left: 75%;
+            animation-delay: 1s;
+        }
+
+        .pulse-dot:nth-child(3) {
+            top: 85%;
+            left: 45%;
+            animation-delay: 2s;
+        }
+
+        .pulse-dot:nth-child(4) {
+            top: 30%;
+            left: 85%;
+            animation-delay: 1.5s;
+        }
+
+        .pulse-dot:nth-child(5) {
+            top: 75%;
+            left: 15%;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 0.2;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(3);
+            }
         }
         .login-container {
             background: rgba(255, 255, 255, 0.98);
@@ -131,7 +306,25 @@ session_start();
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
 </head>
 <body>
-    <div id="vanta-bg" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:-2;"></div>
+    <!-- Animated background elements -->
+    <div class="bg-animation">
+        <!-- Grid Pattern -->
+        <div class="grid-pattern"></div>
+        
+        <!-- Floating Circles -->
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        
+        <!-- Pulsing Dots -->
+        <div class="pulse-dot"></div>
+        <div class="pulse-dot"></div>
+        <div class="pulse-dot"></div>
+        <div class="pulse-dot"></div>
+        <div class="pulse-dot"></div>
+    </div>
     <div class="login-container">
         <div class="logo" style="text-align:center;">
             <h1 style="display:block; margin:0 auto 8px auto;">EliteFit</h1>

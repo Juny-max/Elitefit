@@ -25,17 +25,17 @@ $settings = [
 $success = false;
 $error = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_settings'])) {
-    // In a real application, you would validate and save these settings to a database or file
-    $settings['site_title'] = trim($_POST['site_title']);
-    $settings['admin_email'] = trim($_POST['admin_email']);
-    $settings['logo_url'] = trim($_POST['logo_url']);
-    $settings['theme_color'] = $_POST['theme_color'];
-    $settings['enable_notifications'] = isset($_POST['enable_notifications']);
-    $settings['maintenance_mode'] = isset($_POST['maintenance_mode']);
-    $settings['registration_enabled'] = isset($_POST['registration_enabled']);
-    $settings['session_timeout'] = intval($_POST['session_timeout']);
-    $settings['backup_frequency'] = $_POST['backup_frequency'];
-    $settings['currency'] = $_POST['currency'];
+    // Safely get and validate form data with default values
+    if (isset($_POST['site_title'])) $settings['site_title'] = trim($_POST['site_title']);
+    if (isset($_POST['admin_email'])) $settings['admin_email'] = trim($_POST['admin_email']);
+    if (isset($_POST['logo_url'])) $settings['logo_url'] = trim($_POST['logo_url']);
+    if (isset($_POST['theme_color'])) $settings['theme_color'] = $_POST['theme_color'];
+    if (isset($_POST['enable_notifications'])) $settings['enable_notifications'] = true;
+    if (isset($_POST['maintenance_mode'])) $settings['maintenance_mode'] = true;
+    if (isset($_POST['registration_enabled'])) $settings['registration_enabled'] = true;
+    if (isset($_POST['session_timeout'])) $settings['session_timeout'] = intval($_POST['session_timeout']);
+    if (isset($_POST['backup_frequency'])) $settings['backup_frequency'] = $_POST['backup_frequency'];
+    if (isset($_POST['currency'])) $settings['currency'] = $_POST['currency'];
     
     // Example: Save settings to a file or database
     // file_put_contents('../settings.json', json_encode($settings));
