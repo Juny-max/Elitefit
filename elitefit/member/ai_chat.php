@@ -13,7 +13,7 @@ if (!isset($data['message']) || trim($data['message']) === '') {
     exit;
 }
 
-$apiKey = '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'; // OpenRouter API key set directly
+$apiKey = 'insert-your-api-key'; // OpenRouter API key set directly
 if (!$apiKey) {
     http_response_code(500);
     echo json_encode(['error' => 'API key not configured']);
